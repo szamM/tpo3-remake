@@ -1,0 +1,39 @@
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.support.ui.WebDriverWait;
+import pages.HomePage;
+
+public class SearchOnVotingTest {
+
+  private static Utils utils;
+  private static WebDriver driver;
+  private static WebDriverWait wait;
+  private static JavascriptExecutor js;
+  private static HomePage homePage;
+
+  @BeforeEach
+  public void setUp() {
+    utils = new Utils();
+    utils.setupDriver();
+    driver = utils.getDriver();
+    wait = utils.getWaitTime();
+    js = utils.getJsExecutor();
+
+    homePage = new HomePage(driver);
+  }
+
+  @AfterEach
+  public void tearDown() {
+    driver.quit();
+  }
+
+  @Test
+  public void searchOnVotingTest() {
+    homePage.clickOnVotingButton();
+    js.executeScript("window.scrollBy(0, 500)");
+    js.executeScript("window.scrollBy(0,-250)");
+  }
+}
