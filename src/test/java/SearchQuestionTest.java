@@ -38,4 +38,9 @@ public class SearchQuestionTest {
     homePage.searchQuestion();
     searchPage.chooseQuestion();
   }
+
+  @Test
+  public void searchInvalidQuestionTest() {
+    homePage.searchInvalidQuestion();
+  }
 }

@@ -72,4 +72,11 @@ public class CreateQuestionTest {
     homePage.clickAskButton();
     askPage.createQuestion();
   }
+
+  @Test
+  @Order(3)
+  public void createInvalidQuestionTest() {
+    homePage.clickAskButton();
+    askPage.createInvalidQuestion();
+  }
 }

@@ -102,4 +102,17 @@ public class AskPage extends Page {
     getMessageCheckbox.click();
     getMessageCheckbox.click();
   }
+
+  public void createInvalidQuestion() {
+    questionInset.click();
+    questionTopicTextArea.click();
+    questionTopicTextArea.sendKeys("\t\t\t");
+    questionTextArea.click();
+    questionTextArea.sendKeys("   ");
+    manageDropdowns();
+    allowCommentsCheckbox.click();
+    allowCommentsCheckbox.click();
+    getMessageCheckbox.click();
+    getMessageCheckbox.click();
+  }
 }

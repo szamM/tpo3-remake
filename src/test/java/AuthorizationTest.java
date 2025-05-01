@@ -44,10 +44,20 @@ public class AuthorizationTest {
 
   @Test
   @Order(1)
-  public void authorizationTest() {
+  public void invalidAuthorizationTest() {
     homePage.clickEnterButton();
     By username = By.xpath("//input[@placeholder='Имя аккаунта']");
     switchToFrameWithLocator(username);
+    homePage.submitLogin();
+    homePage.checkAccountError();
+  }
+
+  @Test
+  @Order(2)
+  public void authorizationTest() {
+    homePage.clickEnterButton();
+    By iframeLocator = By.xpath("//iframe[contains(@class, 'ag-popup__frame__layout__iframe')]");
+    wait.until(ExpectedConditions.frameToBeAvailableAndSwitchToIt(iframeLocator));
     homePage.enterLoginAndChooseMailType("test_qa_lab3");
     homePage.enterNumbersAndCode("9", "5");
     WebElement codeField = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//input[@name='Code']")));
@@ -57,7 +67,7 @@ public class AuthorizationTest {
   }
 
   @Test
-  @Order(2)
+  @Order(3)
   public void logoutTest() {
     homePage.logout();
   }

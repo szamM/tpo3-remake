@@ -52,6 +52,9 @@ public class HomePage extends Page {
   @FindBy(xpath = "//input[@name='username']")
   private WebElement accountNameInput;
 
+  @FindBy(xpath = "//div[@data-test-id='error-footer-text']/small[@data-test-id='required']")
+  private WebElement accountNameError;
+
   @FindBy(xpath = "//div[@id='root']/div/div/div/div[2]/div/form/div[2]/div[2]/div/div/div/div/div/div/div[3]/div/div/div/div")
   private WebElement mailChoseDropdown;
 
@@ -191,6 +194,10 @@ public class HomePage extends Page {
     chosenQuestion.click();
   }
 
+  public void checkAccountError() {
+    assertEquals(heading.getAccessibleName(), "Поле «Имя аккаунта» должно быть заполнено");
+  }
+
   public void clickBestButton() {
     bestButton.click();
     chosenQuestion.click();
@@ -204,6 +211,12 @@ public class HomePage extends Page {
   public void searchQuestion() {
     searchByQuestionInput.click();
     searchByQuestionInput.sendKeys("Тортик рецепты");
+    magnifierButton.click();
+  }
+
+  public void searchInvalidQuestion() {
+    searchByQuestionInput.click();
+    searchByQuestionInput.sendKeys("\t");
     magnifierButton.click();
   }
 
