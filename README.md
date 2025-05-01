@@ -15,7 +15,7 @@
 
 ## Задание
 
-Сформировать варианты использования, разработать на их основе тестовое покрытие покрытие и провести функциональное тестирование интерфейса сайта (в соответствии с вариантом).
+Сформировать варианты использования, разработать на их основе тестовое покрытие и провести функциональное тестирование интерфейса сайта (в соответствии с вариантом).
 
 ### Требования к выполнению работы
 
@@ -43,6 +43,8 @@
 
 ## Выполнение
 
+TODO ![Use-Case диаграмма](TODO)
+
 Сценарии:
 
 | № | Кейс | Успешность |
@@ -64,10 +66,14 @@
 | [github.com/band-of-four/cheatsheets/testing/lab3.md](https://github.com/band-of-four/cheatsheets/blob/master/testing/lab3.md) | Ответы на вопросы с [se.ifmo.ru](https://se.ifmo.ru/courses/testing#labs) |
 | [youtu.be/nU1Rvo8YyeY](https://www.youtube.com/watch?v=nU1Rvo8YyeY&ab_channel=SergeKlimenkov) | Лекция ТПО #3. Функциональное тестирование. Selenium. |
 | [ru.wikipedia.org/wiki/Функциональное_тестирование](https://ru.wikipedia.org/wiki/%D0%A4%D1%83%D0%BD%D0%BA%D1%86%D0%B8%D0%BE%D0%BD%D0%B0%D0%BB%D1%8C%D0%BD%D0%BE%D0%B5_%D1%82%D0%B5%D1%81%D1%82%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5) | Функциональное тестирование |
+| [stackoverflow.com/questions/20239550](https://stackoverflow.com/questions/20239550/difference-between-functional-testing-and-system-testing/20239807) | Разница между функциональным и системным тестированием |
 | [ibs-qa.ru/media/chto-takoe-funktsionalnoe-testirovanie](https://ibs-qa.ru/media/chto-takoe-funktsionalnoe-testirovanie/) | Что такое функциональное тестирование? |
 | [www.selenium.dev/documentation/](https://www.selenium.dev/documentation/) | Документация Selenium |
 | [allurereport.org](https://allurereport.org/) | Инструмент для создания отчетов по автоматизированным тестам |
 | [software-testing.ru/library/testing/testing-tools/4232-xpath-css](https://software-testing.ru/library/testing/testing-tools/4232-xpath-css) | Шпаргалка по XPath и CSS-селекторам |
+| [github.com/php-webdriver/php-webdriver/wiki/JsonWireProtocol-vs.-W3C-WebDriver](https://github.com/php-webdriver/php-webdriver/wiki/JsonWireProtocol-vs.-W3C-WebDriver) | JsonWireProtocol vs. W3C WebDriver |
+| [browserstack.com/guide/selenium-cloudflare](https://www.browserstack.com/guide/selenium-cloudflare) <br> [stackoverflow.com/questions/68289474](https://stackoverflow.com/questions/68289474/selenium-headless-how-to-bypass-cloudflare-detection-using-selenium) | Как обойти обнаружение Cloudflare используя Selenium |
+| [stackoverflow.com/questions/58872451](https://stackoverflow.com/questions/58872451/how-can-i-bypass-the-google-captcha-with-selenium-and-python) <br> [habr.com/ru/articles/442034](https://habr.com/ru/articles/442034/) | Обход ReCaptcha в Selenium тестах |
 | [github.com/17starplatinum/TEST-Lab3](https://github.com/17starplatinum/TEST-Lab3/) | Качественно выполненная ЛР 3 |
 | [github.com/Evisom/itmo-software-testing/lab3](https://github.com/Evisom/itmo-software-testing/tree/main/lab3) | ЛР 3 на Playwright |
 
