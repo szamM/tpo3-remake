@@ -43,17 +43,23 @@
 
 ## Выполнение
 
-TODO ![Use-Case диаграмма](TODO)
+### Диаграмма прецедентов
 
-Сценарии:
+[![Use Case diagram](./docs/use-case.png)](./docs/use-case.plantuml)
+
+### Сценарии
+
+⚠️ Тесты, для которых требуется авторизация, не могут быть полностью автоматизированы в связи со способом аутентификации в веб-приложении – по кодам, отправленным в СМС.
 
 | № | Кейс | Успешность |
 | --- | --- | --- |
-| 1 | TODO | ? |
-| 2 | TODO | ? |
-| 3 | TODO | ? |
-| 4 | TODO | ? |
-| 5 | TODO | ? |
+| 1 | [`AuthorizationTest`](./src/test/java/AuthorizationTest.java) | ⚠️ |
+| 2 | [`ChooseQuestionTest`](./src/test/java/ChooseQuestionTest.java) | ✅ |
+| 3 | [`ClickAllCategoriesTest`](./src/test/java/ClickAllCategoriesTest.java) | ✅ |
+| 4 | [`CreatePollTest`](./src/test/java/CreatePollTest.java) | ⚠️ |
+| 5 | [`CreateQuestionTest`](./src/test/java/CreateQuestionTest.java) | ⚠️ |
+| 6 | [`RegisterCompanyTest`](./src/test/java/RegisterCompanyTest.java) | ⚠️ |
+| 7 | [`SearchFromBestTest`](./src/test/java/SearchFromBestTest.java) <br> [`SearchFromOpenTest`](./src/test/java/SearchFromOpenTest.java) <br> [`SearchLeadersTest`](./src/test/java/SearchLeadersTest.java) <br> [`SearchOnVotingTest`](./src/test/java/SearchOnVotingTest.java) <br> [`SearchQuestionTest`](./src/test/java/SearchQuestionTest.java) | ✅ |
 
 ---
 
