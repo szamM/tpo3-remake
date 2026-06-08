@@ -4,10 +4,20 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>org.example</groupId>
-  <artifactId>TestingLab3</artifactId>
+  <artifactId>hh-testing-lab3</artifactId>
   <version>1.0-SNAPSHOT</version>
-  <name>Archetype - TestingLab3</name>
-  <url>http://maven.apache.org</url>
+  <name>HH Selenium Testing Lab 3</name>
+
+  <properties>
+    <maven.compiler.release>17</maven.compiler.release>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <junit.jupiter.execution.parallel.enabled>true</junit.jupiter.execution.parallel.enabled>
+    <junit.jupiter.execution.parallel.mode.default>concurrent</junit.jupiter.execution.parallel.mode.default>
+    <junit.jupiter.execution.parallel.mode.classes.default>concurrent</junit.jupiter.execution.parallel.mode.classes.default>
+    <junit.jupiter.execution.parallel.config.strategy>fixed</junit.jupiter.execution.parallel.config.strategy>
+    <junit.jupiter.execution.parallel.config.fixed.parallelism>2</junit.jupiter.execution.parallel.config.fixed.parallelism>
+    <junit.jupiter.execution.parallel.config.fixed.max-pool-size>2</junit.jupiter.execution.parallel.config.fixed.max-pool-size>
+  </properties>
 
   <dependencyManagement>
     <dependencies>
@@ -18,113 +28,63 @@
         <type>pom</type>
         <scope>import</scope>
       </dependency>
-
-      <dependency>
-        <groupId>io.qameta.allure</groupId>
-        <artifactId>allure-bom</artifactId>
-        <version>2.29.1</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
     </dependencies>
   </dependencyManagement>
 
   <dependencies>
-    <!-- JUnit 5 -->
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-api</artifactId>
-      <version>5.11.4</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-params</artifactId>
+      <scope>test</scope>
     </dependency>
 
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-engine</artifactId>
-      <version>5.11.4</version>
       <scope>test</scope>
     </dependency>
 
-    <!-- Selenium WebDriver -->
     <dependency>
       <groupId>org.seleniumhq.selenium</groupId>
       <artifactId>selenium-java</artifactId>
       <version>4.31.0</version>
     </dependency>
 
-    <!-- WebDriver для Chrome -->
-    <dependency>
-      <groupId>org.seleniumhq.selenium</groupId>
-      <artifactId>selenium-chrome-driver</artifactId>
-      <version>4.31.0</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.seleniumhq.selenium</groupId>
-      <artifactId>selenium-firefox-driver</artifactId>
-      <version>4.31.0</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.seleniumhq.selenium</groupId>
-      <artifactId>selenium-devtools-v135</artifactId>
-      <version>4.31.0</version>
-    </dependency>
-
-    <!-- WebDriverManager для управления версиями браузера -->
     <dependency>
       <groupId>io.github.bonigarcia</groupId>
       <artifactId>webdrivermanager</artifactId>
       <version>5.8.0</version>
     </dependency>
 
-    <!--  Allure  -->
-    <dependency>
-      <groupId>io.qameta.allure</groupId>
-      <artifactId>allure-junit5</artifactId>
-      <version>2.29.1</version>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>io.qameta.allure</groupId>
-      <artifactId>allure-maven</artifactId>
-      <version>2.15.2</version>
-    </dependency>
-
-    <!-- Hamcrest для утверждений -->
-    <dependency>
-      <groupId>org.hamcrest</groupId>
-      <artifactId>hamcrest</artifactId>
-      <version>2.2</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-api</artifactId>
-      <version>2.0.0-alpha1</version>
-    </dependency>
-
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-simple</artifactId>
-      <version>2.0.0-alpha1</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.aspectj</groupId>
-      <artifactId>aspectjweaver</artifactId>
-      <version>1.9.24</version>
-      <scope>runtime</scope>
+      <version>2.0.17</version>
     </dependency>
   </dependencies>
 
   <build>
     <plugins>
-      <!-- Плагин для запуска тестов JUnit 5 -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>2.22.2</version>
+        <version>3.5.2</version>
+        <configuration>
+          <useModulePath>false</useModulePath>
+          <systemPropertyVariables>
+            <junit.jupiter.execution.parallel.enabled>${junit.jupiter.execution.parallel.enabled}</junit.jupiter.execution.parallel.enabled>
+            <junit.jupiter.execution.parallel.mode.default>${junit.jupiter.execution.parallel.mode.default}</junit.jupiter.execution.parallel.mode.default>
+            <junit.jupiter.execution.parallel.mode.classes.default>${junit.jupiter.execution.parallel.mode.classes.default}</junit.jupiter.execution.parallel.mode.classes.default>
+            <junit.jupiter.execution.parallel.config.strategy>${junit.jupiter.execution.parallel.config.strategy}</junit.jupiter.execution.parallel.config.strategy>
+            <junit.jupiter.execution.parallel.config.fixed.parallelism>${junit.jupiter.execution.parallel.config.fixed.parallelism}</junit.jupiter.execution.parallel.config.fixed.parallelism>
+            <junit.jupiter.execution.parallel.config.fixed.max-pool-size>${junit.jupiter.execution.parallel.config.fixed.max-pool-size}</junit.jupiter.execution.parallel.config.fixed.max-pool-size>
+          </systemPropertyVariables>
+        </configuration>
       </plugin>
     </plugins>
   </build>
