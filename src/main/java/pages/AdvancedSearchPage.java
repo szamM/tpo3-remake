@@ -1,15 +1,28 @@
 package pages;
 
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.FindBy;
 
 public class AdvancedSearchPage extends Page {
 
-  private static final String TITLE = "//h1[contains(., 'Поиск вакансий')]";
-  private static final String KEYWORDS_INPUT = "//*[@data-qa='vacancysearch__keywords-input']";
-  private static final String SALARY_INPUT = "//*[@data-qa='advanced-search-salary']";
-  private static final String EXPERIENCE_NO_EXPERIENCE = "//*[@data-qa='advanced-search__experience-item_noExperience']";
-  private static final String EMPLOYMENT_FULL = "//*[@data-qa='advanced-search__employment_form-item_FULL']";
-  private static final String SUBMIT_BUTTON = "//*[@data-qa='advanced-search-submit-button']";
+  @FindBy(xpath = "//h1[contains(., 'Поиск вакансий')]")
+  private WebElement title;
+
+  @FindBy(xpath = "//*[@data-qa='vacancysearch__keywords-input']")
+  private WebElement keywordsInput;
+
+  @FindBy(xpath = "//*[@data-qa='advanced-search-salary']")
+  private WebElement salaryInput;
+
+  @FindBy(xpath = "//*[@data-qa='advanced-search__experience-item_noExperience']")
+  private WebElement noExperienceCheckbox;
+
+  @FindBy(xpath = "//*[@data-qa='advanced-search__employment_form-item_FULL']")
+  private WebElement fullEmploymentCheckbox;
+
+  @FindBy(xpath = "//*[@data-qa='advanced-search-submit-button']")
+  private WebElement submitButton;
 
   public AdvancedSearchPage(WebDriver driver) {
     super(driver);
@@ -21,17 +34,17 @@ public class AdvancedSearchPage extends Page {
   }
 
   public AdvancedSearchPage waitUntilOpened() {
-    visible(TITLE);
-    visible(KEYWORDS_INPUT);
+    visible(title);
+    visible(keywordsInput);
     return this;
   }
 
   public VacancySearchPage searchEntryLevelFullTimeVacancies(String query, String salaryFrom) {
-    type(KEYWORDS_INPUT, query);
-    type(SALARY_INPUT, salaryFrom);
-    clickCheckable(EXPERIENCE_NO_EXPERIENCE);
-    clickCheckable(EMPLOYMENT_FULL);
-    click(SUBMIT_BUTTON);
+    type(keywordsInput, query);
+    typeMasked(salaryInput, salaryFrom);
+    clickCheckable(noExperienceCheckbox);
+    clickCheckable(fullEmploymentCheckbox);
+    click(submitButton);
     return new VacancySearchPage(driver).waitUntilSearchFinished(query);
   }
 }

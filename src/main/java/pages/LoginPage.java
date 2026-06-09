@@ -1,21 +1,37 @@
 package pages;
 
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.FindBy;
 
 public class LoginPage extends Page {
 
-  private static final String ACCOUNT_TYPE_CARD =
-      "//*[@data-qa='applicant-login-card' or contains(@data-qa, 'account-type-card-APPLICANT')]";
-  private static final String SUBMIT_BUTTON = "//*[@data-qa='submit-button']";
-  private static final String CREDENTIAL_SWITCH = "//*[@data-qa='credential-type-switch']";
-  private static final String EMAIL_CREDENTIAL = "//*[contains(@data-qa, 'credential-type-EMAIL')]";
-  private static final String EMAIL_INPUT = "//*[@data-qa='applicant-login-input-email']";
-  private static final String PHONE_INPUT = "//input[@inputmode='tel']";
-  private static final String PASSWORD_INPUT = "//input[@type='password']";
+  @FindBy(xpath = "//*[@data-qa='applicant-login-card' or contains(@data-qa, 'account-type-card-APPLICANT')]")
+  private WebElement accountTypeCard;
 
-  private static final String ERROR_MESSAGE = "//*[@data-qa='form-helper-error']";
-  private static final String WAITING_FOR_SMS = "//input[@inputmode='numeric']";
-  private static final String PASSWORD_BUTTON = "//*[@id=\"HH-React-Root\"]/div/div[1]/div/div/div[1]/div/div/div/div/div/div[1]/div/div/form/div/div/div[5]/button[2]";
+  @FindBy(xpath = "//*[@data-qa='submit-button']")
+  private WebElement submitButton;
+
+  @FindBy(xpath = "//*[@data-qa='credential-type-switch']")
+  private WebElement credentialSwitch;
+
+  @FindBy(xpath = "//*[contains(@data-qa, 'credential-type-EMAIL')]")
+  private WebElement emailCredential;
+
+  @FindBy(xpath = "//*[@data-qa='applicant-login-input-email']")
+  private WebElement emailInput;
+
+  @FindBy(xpath = "//input[@inputmode='tel']")
+  private WebElement phoneInput;
+
+  @FindBy(xpath = "//input[@type='password']")
+  private WebElement passwordInput;
+
+  @FindBy(xpath = "//*[@data-qa='form-helper-error']")
+  private WebElement errorMessage;
+
+  @FindBy(xpath = "//*[@id='HH-React-Root']/div/div[1]/div/div/div[1]/div/div/div/div/div/div[1]/div/div/form/div/div/div[5]/button[2]")
+  private WebElement passwordButton;
 
   public LoginPage(WebDriver driver) {
     super(driver);
@@ -27,64 +43,68 @@ public class LoginPage extends Page {
   }
 
   public LoginPage waitUntilOpened() {
-    visible(ACCOUNT_TYPE_CARD);
+    visible(accountTypeCard);
     return this;
   }
 
   public LoginPage continueByPhoneNumber(String query) {
-    type(PHONE_INPUT, query);
-    click(SUBMIT_BUTTON);
+    typeMasked(phoneInput, query);
+    click(submitButton);
     skipIfCaptchaPresent();
     return this;
   }
 
   public LoginPage continueAsApplicant() {
-    if (!exists(CREDENTIAL_SWITCH)) {
-      click(SUBMIT_BUTTON);
+    if (!exists(credentialSwitch)) {
+      click(submitButton);
     }
-    visible(CREDENTIAL_SWITCH);
+    visible(credentialSwitch);
     return this;
   }
 
 
   public LoginPage chooseEmailCredential() {
-    clickCheckable(EMAIL_CREDENTIAL);
-    visible(EMAIL_INPUT);
+    clickCheckable(emailCredential);
+    visible(emailInput);
     return this;
   }
 
   public LoginPage writeEmailAndSubmit(String email){
-    type(EMAIL_INPUT, email);
-    click(SUBMIT_BUTTON);
+    type(emailInput, email);
+    click(submitButton);
     skipIfCaptchaPresent();
     return this;
   }
 
   public LoginPage writeEmail(String email){
-    type(EMAIL_INPUT, email);
+    type(emailInput, email);
     return this;
   }
 
   public LoginPage writePasswordAndSend(String password){
-    click(PASSWORD_BUTTON);
+    click(passwordButton);
     skipIfCaptchaPresent();
-    type(PASSWORD_INPUT, password);
-    click(SUBMIT_BUTTON);
+    type(passwordInput, password);
+    click(submitButton);
     skipIfCaptchaPresent();
     return this;
   }
 
   public LoginPage submitEmptyEmail() {
-    click(SUBMIT_BUTTON);
+    click(submitButton);
     skipIfCaptchaPresent();
-    visible(ERROR_MESSAGE);
+    visible(errorMessage);
     return this;
   }
-  public String codeInfo(){
-    return visible(WAITING_FOR_SMS).getText();
+  public String codeInfo() {
+    return wait.until(driver -> {
+      skipIfCaptchaPresent();
+      String pageText = bodyText();
+      return pageText.contains("Введите код") ? pageText : null;
+    });
   }
 
   public String validationError() {
-    return visible(ERROR_MESSAGE).getText();
+    return visible(errorMessage).getText();
   }
 }

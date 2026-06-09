@@ -2,16 +2,27 @@ package pages;
 
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.FindBy;
 
+import java.util.List;
 import java.util.Locale;
 
 public class EmployersPage extends Page {
 
-  private static final String CATALOG_TITLE = "//*[@data-qa='employers-company__title']";
-  private static final String COMPANY_SEARCH_INPUT = "//*[@data-qa='search-input' and @name='query']";
-  private static final String COMPANY_SEARCH_BUTTON = "//*[@data-qa='search-button']";
-  private static final String EMPLOYER_NAMES = "//*[@data-qa='employer-name']";
-  private static final String PROFILE_TITLE = "//h1 | //*[@data-qa='title']";
+  @FindBy(xpath = "//*[@data-qa='employers-company__title']")
+  private WebElement catalogTitle;
+
+  @FindBy(xpath = "//*[@data-qa='search-input' and @name='query']")
+  private WebElement companySearchInput;
+
+  @FindBy(xpath = "//*[@data-qa='search-button']")
+  private WebElement companySearchButton;
+
+  @FindBy(xpath = "//*[@data-qa='employer-name']")
+  private List<WebElement> employerNames;
+
+  @FindBy(xpath = "//h1 | //*[@data-qa='title']")
+  private WebElement profileTitle;
 
   public EmployersPage(WebDriver driver) {
     super(driver);
@@ -23,46 +34,46 @@ public class EmployersPage extends Page {
   }
 
   public EmployersPage waitUntilCatalogOpened() {
-    visible(CATALOG_TITLE);
+    visible(catalogTitle);
     return this;
   }
 
   public EmployersPage openList() {
     openPath("/employers_list?areaId=113");
-    visible(COMPANY_SEARCH_INPUT);
+    visible(companySearchInput);
     return this;
   }
 
   public EmployersPage searchCompany(String query) {
-    type(COMPANY_SEARCH_INPUT, query);
-    click(COMPANY_SEARCH_BUTTON);
+    type(companySearchInput, query);
+    click(companySearchButton);
     if (!waitShortForUrlContains("query=")) {
       openPath("/employers_list?areaId=113&query=" + urlEncode(query));
     }
-    visible(EMPLOYER_NAMES);
+    visible(employerNames);
     return this;
   }
 
   public int resultCount() {
-    return elements(EMPLOYER_NAMES).size();
+    return elements(employerNames).size();
   }
 
   public boolean hasEmployerContaining(String expectedText) {
     String expected = expectedText.toLowerCase(Locale.ROOT);
-    return elements(EMPLOYER_NAMES).stream()
+    return elements(employerNames).stream()
         .map(WebElement::getText)
         .map(text -> text.toLowerCase(Locale.ROOT))
         .anyMatch(text -> text.contains(expected));
   }
 
   public EmployersPage openFirstEmployerProfile() {
-    WebElement firstEmployer = visible(EMPLOYER_NAMES);
+    WebElement firstEmployer = visible(employerNames);
     String href = firstEmployer.getAttribute("href");
-    click(EMPLOYER_NAMES);
+    click(firstEmployer);
     if (!waitShortForUrlContains("/employer/")) {
       driver.get(toAbsoluteUrl(href));
     }
-    visible(PROFILE_TITLE);
+    visible(profileTitle);
     return this;
   }
 }

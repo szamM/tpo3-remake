@@ -18,6 +18,7 @@ public class VacancyFilterTest extends BaseBrowserTest {
   private static final int MIN_SALARY = 110000;
   private static final String INVALID_SALARY = "abc";
   private static final String INVALID_FILTER_VALUE = "INVALID";
+  private static final String EXCLUDED_WORD = "Senior";
 
   @ParameterizedTest(name = "{0}")
   @MethodSource("browsers")
@@ -66,6 +67,20 @@ public class VacancyFilterTest extends BaseBrowserTest {
 
       assertTrue(searchPage.hasHiddenFilterValue("work_format", "REMOTE"));
       assertTrue(searchPage.allVisibleCardsContain("удал"));
+    });
+  }
+
+  @ParameterizedTest(name = "{0}")
+  @MethodSource("browsers")
+  void excludedWordFilterHidesMatchingVacancies(BrowserType browserType) {
+    runInBrowser(browserType, driver -> {
+      VacancySearchPage searchPage = new VacancySearchPage(driver)
+          .openWithFilters(QUERY, "excluded_text=" + EXCLUDED_WORD)
+          .closePopups()
+          .waitUntilVisibleCardsLoaded();
+
+      assertTrue(searchPage.resultCount() > 0);
+      assertTrue(searchPage.allVisibleCardsDoNotContain(EXCLUDED_WORD));
     });
   }
 

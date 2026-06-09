@@ -1,19 +1,27 @@
 package pages;
 
-import org.openqa.selenium.By;
+import org.openqa.selenium.StaleElementReferenceException;
+import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.FindBy;
 
 import java.util.List;
 import java.util.Locale;
 
 public class SearchPage extends Page {
 
-  protected static final String RESULT_HEADING = "//h1[contains(., 'ваканс') or contains(., 'Вакансии')]";
-  protected static final String RESULT_TITLES = "//*[@data-qa='serp-item__title']";
-  protected static final String EMPLOYER_LINKS = "//*[@data-qa='vacancy-serp__vacancy-employer']";
-  private static final String WITH_SALARY_FILTER = "//input[@name='with_salary']";
+  @FindBy(xpath = "//h1[contains(., 'ваканс') or contains(., 'Вакансии')]")
+  protected WebElement resultHeading;
+
+  @FindBy(xpath = "//*[@data-qa='serp-item__title']")
+  protected List<WebElement> resultTitles;
+
+  @FindBy(xpath = "//*[@data-qa='vacancy-serp__vacancy-employer']")
+  private List<WebElement> employerLinks;
+
+  @FindBy(xpath = "//input[@name='with_salary']")
+  private WebElement withSalaryFilter;
 
   public SearchPage(WebDriver driver) {
     super(driver);
@@ -25,38 +33,39 @@ public class SearchPage extends Page {
   }
 
   public VacancySearchPage waitForResults(String query) {
-    visible(RESULT_HEADING);
-    wait.until(ExpectedConditions.or(
-        ExpectedConditions.textToBePresentInElementLocated(By.xpath(RESULT_HEADING), query),
-        ExpectedConditions.presenceOfElementLocated(By.xpath(RESULT_TITLES))
-    ));
+    visible(resultHeading);
+    wait.until(driver -> {
+      skipIfCaptchaPresent();
+      return normalizeText(resultHeading.getText()).contains(query)
+          || !elements(resultTitles).isEmpty();
+    });
     return new VacancySearchPage(driver);
   }
 
   public String heading() {
-    return visible(RESULT_HEADING).getText();
+    return visible(resultHeading).getText();
   }
 
   public int resultCount() {
-    return elements(RESULT_TITLES).size();
+    return elements(resultTitles).size();
   }
 
   public int employerCount() {
-    return elements(EMPLOYER_LINKS).size();
+    return elements(employerLinks).size();
   }
 
   public SearchPage selectOnlyWithSalary() {
-    clickCheckable(WITH_SALARY_FILTER);
-    wait.until(driver -> driver.findElement(By.xpath(WITH_SALARY_FILTER)).isSelected()
+    clickCheckable(withSalaryFilter);
+    wait.until(driver -> withSalaryFilter.isSelected()
         || driver.getCurrentUrl().contains("with_salary")
         || driver.getCurrentUrl().contains("label=with_salary"));
     return this;
   }
 
   public VacancyPage openFirstVacancy() {
-    WebElement firstVacancy = visible(RESULT_TITLES);
+    WebElement firstVacancy = visible(resultTitles);
     String href = firstVacancy.getAttribute("href");
-    click(RESULT_TITLES);
+    click(firstVacancy);
     if (!waitShortForUrlContains("/vacancy/")) {
       driver.get(href);
     }
@@ -65,8 +74,7 @@ public class SearchPage extends Page {
 
   public boolean hasResultWithText(String expectedText) {
     String expected = expectedText.toLowerCase(Locale.ROOT);
-    List<WebElement> titles = elements(RESULT_TITLES);
-    return titles.stream()
+    return elements(resultTitles).stream()
         .map(WebElement::getText)
         .map(text -> text.toLowerCase(Locale.ROOT))
         .anyMatch(text -> text.contains(expected));
@@ -74,10 +82,22 @@ public class SearchPage extends Page {
 
   public boolean hasEmployerContaining(String expectedText) {
     String expected = expectedText.toLowerCase(Locale.ROOT);
-    List<WebElement> employers = elements(EMPLOYER_LINKS);
-    return employers.stream()
-        .map(WebElement::getText)
-        .map(text -> text.toLowerCase(Locale.ROOT))
-        .anyMatch(text -> text.contains(expected));
+    try {
+      return wait.until(driver -> visibleEmployersContain(expected));
+    } catch (TimeoutException exception) {
+      return false;
+    }
+  }
+
+  private boolean visibleEmployersContain(String expectedText) {
+    try {
+      return elements(employerLinks).stream()
+          .filter(WebElement::isDisplayed)
+          .map(WebElement::getText)
+          .map(text -> text.toLowerCase(Locale.ROOT))
+          .anyMatch(text -> text.contains(expectedText));
+    } catch (StaleElementReferenceException exception) {
+      return false;
+    }
   }
 }

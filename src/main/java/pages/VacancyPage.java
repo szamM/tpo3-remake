@@ -1,6 +1,8 @@
 package pages;
 
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.FindBy;
 
 import java.util.Arrays;
 import java.util.List;
@@ -8,34 +10,41 @@ import java.util.Locale;
 
 public class VacancyPage extends Page {
 
-  private static final String PAGE_BODY = "//body";
-  private static final String VACANCY_TITLE = "//h1";
-  private static final String EXPERIENCE_TEXT = "//p[contains(., 'Опыт работы')]";
-  private static final String RESPONSE_BUTTON = "//*[@data-qa='vacancy-response-link-top']";
+  @FindBy(xpath = "//body")
+  private WebElement pageBody;
+
+  @FindBy(xpath = "//h1")
+  private WebElement vacancyTitle;
+
+  @FindBy(xpath = "//p[contains(., 'Опыт работы')]")
+  private WebElement experienceText;
+
+  @FindBy(xpath = "//*[@data-qa='vacancy-response-link-top']")
+  private WebElement responseButton;
 
   public VacancyPage(WebDriver driver) {
     super(driver);
   }
 
   public VacancyPage waitUntilOpened() {
-    visible(VACANCY_TITLE);
+    visible(vacancyTitle);
     return this;
   }
 
   public String title() {
-    return visible(VACANCY_TITLE).getText();
+    return visible(vacancyTitle).getText();
   }
 
   public String experience() {
-    return visible(EXPERIENCE_TEXT).getText();
+    return visible(experienceText).getText();
   }
 
   public boolean hasResponseButton() {
-    return exists(RESPONSE_BUTTON);
+    return exists(responseButton);
   }
 
   public String pageText() {
-    return normalizeText(visible(PAGE_BODY).getText());
+    return normalizeText(visible(pageBody).getText());
   }
 
   public boolean containsAllQueryWords(String query) {

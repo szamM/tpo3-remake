@@ -26,7 +26,9 @@ public class VacancySearchTest extends BaseBrowserTest {
     runInBrowser(browserType, driver -> {
       VacancySearchPage searchPage = new HomePage(driver)
           .open()
+          .closePopups()
           .searchVacanciesByKeyword(UNKNOWN_VACANCY)
+          .closePopups()
           .waitUntilNothingFoundLoaded(UNKNOWN_VACANCY);
 
       assertEquals("По запросу «" + UNKNOWN_VACANCY + "» ничего не найдено", searchPage.nothingFoundText());
@@ -39,7 +41,9 @@ public class VacancySearchTest extends BaseBrowserTest {
     runInBrowser(browserType, driver -> {
       VacancySearchPage searchPage = new HomePage(driver)
           .open()
+          .closePopups()
           .searchVacanciesByKeyword(EMPTY_QUERY)
+          .closePopups()
           .waitUntilResultsLoaded();
 
       assertTrue(searchPage.currentUrl().contains("/search/vacancy"));
@@ -54,7 +58,9 @@ public class VacancySearchTest extends BaseBrowserTest {
     runInBrowser(browserType, driver -> {
       VacancySearchPage searchPage = new HomePage(driver)
           .open()
+          .closePopups()
           .searchVacanciesByKeyword(KEYWORD_QUERY)
+          .closePopups()
           .waitUntilResultsLoaded();
 
       assertEquals(KEYWORD_QUERY, searchPage.queryInputValue());
@@ -68,9 +74,9 @@ public class VacancySearchTest extends BaseBrowserTest {
   @MethodSource("browsers")
   void searchVacanciesByCompanyName(BrowserType browserType) {
     runInBrowser(browserType, driver -> {
-      VacancySearchPage searchPage = new HomePage(driver)
-          .open()
-          .searchVacanciesByKeyword(COMPANY_QUERY)
+      VacancySearchPage searchPage = new VacancySearchPage(driver)
+          .openWithFilters(COMPANY_QUERY, "search_field=company_name")
+          .closePopups()
           .waitUntilResultsLoaded();
 
       assertEquals(COMPANY_QUERY, searchPage.queryInputValue());
@@ -82,7 +88,12 @@ public class VacancySearchTest extends BaseBrowserTest {
   @MethodSource("browsers")
   void openVacancyDetails(BrowserType browserType) {
     runInBrowser(browserType, driver -> {
-      VacancyPage vacancyPage = new HomePage(driver).open().searchVacancies(DETAILS_QUERY).openFirstVacancy();
+      VacancyPage vacancyPage = new HomePage(driver)
+          .open()
+          .closePopups()
+          .searchVacancies(DETAILS_QUERY)
+          .closePopups()
+          .openFirstVacancy();
       String title = vacancyPage.title().toLowerCase(Locale.ROOT);
 
       assertTrue(!title.isBlank());

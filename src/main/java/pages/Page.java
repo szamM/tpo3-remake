@@ -1,13 +1,17 @@
 package pages;
 
-import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.NoSuchElementException;
+import org.openqa.selenium.NoSuchWindowException;
 import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.By;
+import org.openqa.selenium.support.FindBy;
+import org.openqa.selenium.support.PageFactory;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import org.opentest4j.TestAbortedException;
@@ -16,11 +20,11 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.List;
+import java.util.Locale;
 
 public abstract class Page {
 
   protected static final String BASE_URL = "https://hh.ru";
-  protected static final String CAPTCHA_TEXT = "//*[contains(normalize-space(), 'Пройдите капчу')]";
 
   protected static final Duration DEFAULT_TIMEOUT = Duration.ofSeconds(25);
   protected static final Duration SHORT_TIMEOUT = Duration.ofSeconds(5);
@@ -29,10 +33,20 @@ public abstract class Page {
   protected final WebDriverWait wait;
   protected final JavascriptExecutor js;
 
+  @FindBy(xpath = "//*[contains(normalize-space(), 'Пройдите капчу') or contains(normalize-space(), 'капч') or contains(normalize-space(), 'Капч') or contains(normalize-space(), 'робот') or contains(normalize-space(), 'Робот') or contains(normalize-space(), 'VPN мешает') or contains(translate(normalize-space(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'captcha')]")
+  private List<WebElement> captchaElements;
+
+  @FindBy(xpath = "//body")
+  private List<WebElement> bodyElements;
+
+  @FindBy(xpath = "//button[normalize-space()='Понятно']")
+  private List<WebElement> cookieAcceptButtons;
+
   protected Page(WebDriver driver) {
     this.driver = driver;
     this.wait = new WebDriverWait(driver, DEFAULT_TIMEOUT);
     this.js = (JavascriptExecutor) driver;
+    PageFactory.initElements(driver, this);
   }
 
   public WebDriver getDriver() {
@@ -48,8 +62,13 @@ public abstract class Page {
       driver.get(toAbsoluteUrl(path));
     } catch (TimeoutException exception) {
       js.executeScript("window.stop();");
+    } catch (NoSuchWindowException exception) {
+      throw new TestAbortedException("Окно браузера закрыто проверкой HH, тест пропущен");
+    } catch (WebDriverException exception) {
+      abortIfBrowserWindowClosed(exception);
+      throw exception;
     }
-//    acceptCookiesIfPresent();
+    acceptCookiesIfPresent();
     skipIfCaptchaPresent();
   }
 
@@ -74,19 +93,13 @@ public abstract class Page {
   }
 
   protected void pressEscape() {
-    driver.switchTo().activeElement().sendKeys(Keys.ESCAPE);
-  }
-
-  protected WebElement visible(String xpath) {
-    return wait.until(driver -> {
-      skipIfCaptchaPresent();
-      try {
-        WebElement element = driver.findElement(By.xpath(xpath));
-        return element.isDisplayed() ? element : null;
-      } catch (NoSuchElementException | StaleElementReferenceException exception) {
-        return null;
-      }
-    });
+    try {
+      driver.switchTo().activeElement().sendKeys(Keys.ESCAPE);
+    } catch (NoSuchWindowException exception) {
+      throw new TestAbortedException("Окно браузера закрыто проверкой HH, тест пропущен");
+    } catch (WebDriverException exception) {
+      abortIfBrowserWindowClosed(exception);
+    }
   }
 
   protected WebElement visible(WebElement element) {
@@ -94,17 +107,36 @@ public abstract class Page {
       skipIfCaptchaPresent();
       try {
         return element.isDisplayed() ? element : null;
-      } catch (StaleElementReferenceException exception) {
+      } catch (NoSuchElementException | StaleElementReferenceException exception) {
         return null;
       }
     });
   }
 
-  protected WebElement present(String xpath) {
+  protected WebElement visible(List<WebElement> elements) {
+    return wait.until(driver -> {
+      skipIfCaptchaPresent();
+      return firstDisplayed(elements);
+    });
+  }
+
+  protected WebElement present(WebElement element) {
     return wait.until(driver -> {
       skipIfCaptchaPresent();
       try {
-        return driver.findElement(By.xpath(xpath));
+        element.getTagName();
+        return element;
+      } catch (NoSuchElementException | StaleElementReferenceException exception) {
+        return null;
+      }
+    });
+  }
+
+  protected WebElement present(By locator) {
+    return wait.until(driver -> {
+      skipIfCaptchaPresent();
+      try {
+        return driver.findElement(locator);
       } catch (NoSuchElementException | StaleElementReferenceException exception) {
         return null;
       }
@@ -113,32 +145,73 @@ public abstract class Page {
 
   protected boolean isCaptchaPresent() {
     try {
-      List<WebElement> captchaElements = driver.findElements(By.xpath(CAPTCHA_TEXT));
-      return captchaElements.stream().anyMatch(WebElement::isDisplayed);
-    } catch (StaleElementReferenceException exception) {
+      String currentUrl = driver.getCurrentUrl().toLowerCase(Locale.ROOT);
+      if (currentUrl.contains("captcha")
+          || currentUrl.contains("vpncheck")
+          || currentUrl.contains("vpncheeck")) {
+        return true;
+      }
+
+      if (captchaElements.stream().anyMatch(WebElement::isDisplayed)) {
+        return true;
+      }
+
+      if (bodyElements.isEmpty()) {
+        return false;
+      }
+      String bodyText = normalizeText(bodyElements.get(0).getText()).toLowerCase(Locale.ROOT);
+      return bodyText.contains("капч")
+          || bodyText.contains("captcha")
+          || bodyText.contains("робот")
+          || bodyText.contains("vpn мешает");
+    } catch (NoSuchWindowException exception) {
+      throw new TestAbortedException("Окно браузера закрыто проверкой HH, тест пропущен");
+    } catch (NoSuchElementException | StaleElementReferenceException exception) {
+      return false;
+    } catch (WebDriverException exception) {
+      abortIfBrowserWindowClosed(exception);
       return false;
     }
   }
 
   protected void skipIfCaptchaPresent() {
     if (isCaptchaPresent()) {
-      throw new TestAbortedException("Появилась капча, тест пропущен");
+      throw new TestAbortedException("Появилась капча или проверка HH, тест пропущен");
     }
   }
 
-  protected List<WebElement> elements(String xpath) {
+  private void abortIfBrowserWindowClosed(WebDriverException exception) {
+    String message = exception.getMessage();
+    if (message != null
+        && (message.contains("no such window")
+        || message.contains("web view not found")
+        || message.contains("target window already closed"))) {
+      throw new TestAbortedException("Окно браузера закрыто проверкой HH, тест пропущен");
+    }
+  }
+
+  protected List<WebElement> elements(List<WebElement> locatedElements) {
     skipIfCaptchaPresent();
-    return driver.findElements(By.xpath(xpath));
+    return locatedElements.stream().toList();
   }
 
-  protected boolean exists(String xpath) {
-    return !elements(xpath).isEmpty();
+  protected boolean exists(WebElement element) {
+    try {
+      element.getTagName();
+      return true;
+    } catch (NoSuchElementException | StaleElementReferenceException exception) {
+      return false;
+    }
   }
 
-  protected void type(String xpath, String text) {
-    WebElement element = visible(xpath);
-    element.clear();
-    element.sendKeys(text);
+  protected boolean exists(List<WebElement> elements) {
+    skipIfCaptchaPresent();
+    return !elements.isEmpty();
+  }
+
+  protected boolean exists(By locator) {
+    skipIfCaptchaPresent();
+    return !driver.findElements(locator).isEmpty();
   }
 
   protected void type(WebElement element, String text) {
@@ -152,14 +225,19 @@ public abstract class Page {
     });
   }
 
-  protected void click(String xpath) {
-    WebElement element = visible(xpath);
-    js.executeScript("arguments[0].scrollIntoView({block: 'center'});", element);
-    try {
-      element.click();
-    } catch (RuntimeException exception) {
-      js.executeScript("arguments[0].click();", element);
+  protected void typeMasked(WebElement element, String text) {
+    WebElement visibleElement = visible(element);
+    js.executeScript("arguments[0].focus();", visibleElement);
+    visibleElement.clear();
+    visibleElement.sendKeys(text);
+    if (text.isBlank()) {
+      return;
     }
+    wait.until(driver -> {
+      skipIfCaptchaPresent();
+      String value = visibleElement.getAttribute("value");
+      return onlyDigits(value).contains(onlyDigits(text));
+    });
   }
 
   protected void click(WebElement element) {
@@ -172,18 +250,22 @@ public abstract class Page {
     }
   }
 
-  protected void clickCheckable(String inputXpath) {
-    WebElement input = present(inputXpath);
+  protected void clickCheckable(WebElement element) {
+    WebElement input = present(element);
     try {
       input.click();
     } catch (RuntimeException exception) {
-      List<WebElement> labels = driver.findElements(By.xpath(inputXpath + "/ancestor::label"));
-      if (!labels.isEmpty()) {
-        js.executeScript("arguments[0].click();", labels.get(0));
+      Object label = js.executeScript("return arguments[0].closest('label');", input);
+      if (label instanceof WebElement labelElement) {
+        js.executeScript("arguments[0].click();", labelElement);
       } else {
         js.executeScript("arguments[0].click();", input);
       }
     }
+  }
+
+  protected void clickCheckable(By locator) {
+    clickCheckable(present(locator));
   }
 
   protected void waitForUrlContains(String urlPart) {
@@ -205,12 +287,12 @@ public abstract class Page {
     }
   }
 
-  protected boolean waitShortForVisible(String xpath) {
+  protected boolean waitShortForVisible(WebElement element) {
     try {
       new WebDriverWait(driver, SHORT_TIMEOUT).until(driver -> {
         skipIfCaptchaPresent();
         try {
-          return driver.findElement(By.xpath(xpath)).isDisplayed();
+          return element.isDisplayed();
         } catch (NoSuchElementException | StaleElementReferenceException exception) {
           return false;
         }
@@ -221,10 +303,40 @@ public abstract class Page {
     }
   }
 
+  protected boolean waitShortForVisible(List<WebElement> elements) {
+    try {
+      new WebDriverWait(driver, SHORT_TIMEOUT).until(driver -> {
+        skipIfCaptchaPresent();
+        return firstDisplayed(elements) != null;
+      });
+      return true;
+    } catch (TimeoutException exception) {
+      return false;
+    }
+  }
+
   protected void acceptCookiesIfPresent() {
-    List<WebElement> buttons = driver.findElements(By.xpath("//button[normalize-space()='Понятно']"));
-    if (!buttons.isEmpty()) {
-      js.executeScript("arguments[0].click();", buttons.get(0));
+    if (!cookieAcceptButtons.isEmpty()) {
+      js.executeScript("arguments[0].click();", cookieAcceptButtons.get(0));
+    }
+  }
+
+  protected String bodyText() {
+    return normalizeText(visible(bodyElements).getText());
+  }
+
+  private String onlyDigits(String text) {
+    return text == null ? "" : text.replaceAll("\\D", "");
+  }
+
+  private WebElement firstDisplayed(List<WebElement> elements) {
+    try {
+      return elements.stream()
+          .filter(WebElement::isDisplayed)
+          .findFirst()
+          .orElse(null);
+    } catch (NoSuchElementException | StaleElementReferenceException exception) {
+      return null;
     }
   }
 }

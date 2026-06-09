@@ -5,8 +5,6 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.support.FindBy;
-import org.openqa.selenium.support.PageFactory;
-import org.openqa.selenium.support.ui.ExpectedConditions;
 
 import java.util.List;
 import java.util.Locale;
@@ -17,12 +15,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class VacancySearchPage extends SearchPage {
 
-  private static final String NBSP = "\u00A0";
-  private static final String SEARCH_INPUT = "//*[@data-qa='search-input' and @name='text']";
-  private static final String NOTHING_FOUND_TEXT = "//h1[contains(translate(., '" + NBSP + "', ' '), 'ничего не найдено')]";
-  private static final String VACANCY_CARDS =
-      "//*[contains(concat(' ', normalize-space(@data-qa), ' '), ' vacancy-serp__vacancy ')]";
-  private static final String SALARY_FILTER_INPUT = "//*[@data-qa='novafilters-custom-compensation']";
   private static final Pattern SALARY_TEXT = Pattern.compile(
       "(?iu)(?:от\\s+|до\\s+)?\\d[\\d\\s]*\\s*(?:[–-]\\s*\\d[\\d\\s]*)?\\s*₽"
   );
@@ -31,12 +23,20 @@ public class VacancySearchPage extends SearchPage {
   private static final Pattern SALARY_TO = Pattern.compile("(?iu)до\\s+(\\d[\\d\\s]*)\\s*₽");
   private static final Pattern SALARY_EXACT = Pattern.compile("(?iu)(\\d[\\d\\s]*)\\s*₽");
 
-  @FindBy(xpath = NOTHING_FOUND_TEXT)
+  @FindBy(xpath = "//*[@data-qa='search-input' and @name='text']")
+  private WebElement searchInput;
+
+  @FindBy(xpath = "//h1[contains(translate(., '\u00A0', ' '), 'ничего не найдено')]")
   private WebElement nothingFoundText;
+
+  @FindBy(xpath = "//*[contains(concat(' ', normalize-space(@data-qa), ' '), ' vacancy-serp__vacancy ')]")
+  private List<WebElement> vacancyCards;
+
+  @FindBy(xpath = "//*[@data-qa='novafilters-custom-compensation']")
+  private WebElement salaryFilterInput;
 
   public VacancySearchPage(WebDriver driver) {
     super(driver);
-    PageFactory.initElements(driver, this);
   }
 
   public VacancySearchPage openWithFilters(String query, String filterParams) {
@@ -48,17 +48,22 @@ public class VacancySearchPage extends SearchPage {
     return waitForResults(query);
   }
 
+  public VacancySearchPage closePopups() {
+    pressEscape();
+    return this;
+  }
+
   public VacancySearchPage waitUntilSearchFinished(String query) {
     wait.until(driver -> {
       skipIfCaptchaPresent();
-      return exists(RESULT_TITLES) || exists(NOTHING_FOUND_TEXT);
+      return exists(resultTitles) || exists(nothingFoundText);
     });
     return this;
   }
 
   public VacancySearchPage waitUntilResultsLoaded() {
-    visible(RESULT_HEADING);
-    wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath(RESULT_TITLES)));
+    visible(resultHeading);
+    wait.until(driver -> !elements(resultTitles).isEmpty());
     return this;
   }
 
@@ -68,7 +73,7 @@ public class VacancySearchPage extends SearchPage {
   }
 
   public String queryInputValue() {
-    return normalizeText(visible(SEARCH_INPUT).getAttribute("value"));
+    return normalizeText(visible(searchInput).getAttribute("value"));
   }
 
   public String nothingFoundText() {
@@ -80,27 +85,29 @@ public class VacancySearchPage extends SearchPage {
   }
 
   public String salaryFilterValue() {
-    return normalizeText(visible(SALARY_FILTER_INPUT).getAttribute("value"));
+    return normalizeText(visible(salaryFilterInput).getAttribute("value"));
   }
 
   public boolean isCheckboxFilterSelected(String name, String value) {
-    return present("//input[@name='" + name + "' and @value='" + value + "']").isSelected();
+    return present(filterInputBy(name, value)).isSelected();
   }
 
   public VacancySearchPage selectCheckboxFilter(String name, String value) {
-    clickCheckable("//input[@name='" + name + "' and @value='" + value + "']");
+    clickCheckable(filterInputBy(name, value));
     wait.until(driver -> isCheckboxFilterSelected(name, value));
     return this;
   }
 
   public boolean hasHiddenFilterValue(String name, String value) {
-    return exists("//input[@type='hidden' and @name='" + name + "' and @value='" + value + "']");
+    return exists(By.cssSelector(
+        "input[type='hidden'][name='" + cssValue(name) + "'][value='" + cssValue(value) + "']"
+    ));
   }
 
   public List<String> visibleVacancyCardTexts() {
     for (int attempt = 0; attempt < 3; attempt++) {
       try {
-        List<String> texts = elements(VACANCY_CARDS).stream()
+        List<String> texts = elements(vacancyCards).stream()
             .filter(WebElement::isDisplayed)
             .map(WebElement::getText)
             .map(this::normalizeText)
@@ -143,6 +150,11 @@ public class VacancySearchPage extends SearchPage {
     return this;
   }
 
+  public VacancySearchPage waitUntilVisibleCardsLoaded() {
+    wait.until(driver -> !visibleVacancyCardTexts().isEmpty());
+    return this;
+  }
+
   public boolean allVisibleSalaryTextsCanContainIncome(int income) {
     List<String> salaryTexts = visibleSalaryTexts();
     return !salaryTexts.isEmpty() && salaryTexts.stream()
@@ -155,6 +167,14 @@ public class VacancySearchPage extends SearchPage {
     return !salaryTexts.isEmpty() && salaryTexts.stream()
         .map(this::parseSalaryRange)
         .allMatch(range -> range.intersects(from, to));
+  }
+
+  public boolean allVisibleCardsDoNotContain(String forbiddenText) {
+    String forbidden = forbiddenText.toLowerCase(Locale.ROOT);
+    List<String> cards = visibleVacancyCardTexts();
+    return !cards.isEmpty() && cards.stream()
+        .map(text -> text.toLowerCase(Locale.ROOT))
+        .noneMatch(text -> text.contains(forbidden));
   }
 
   public List<String> vacancyLinks(int limit) {
@@ -180,7 +200,7 @@ public class VacancySearchPage extends SearchPage {
 
   private List<WebElement> visibleVacancyTitles() {
     try {
-      return elements(RESULT_TITLES).stream()
+      return elements(resultTitles).stream()
           .filter(WebElement::isDisplayed)
           .toList();
     } catch (StaleElementReferenceException exception) {
@@ -190,7 +210,7 @@ public class VacancySearchPage extends SearchPage {
 
   private List<String> visibleVacancyLinks(int limit) {
     try {
-      return elements(RESULT_TITLES).stream()
+      return elements(resultTitles).stream()
           .filter(WebElement::isDisplayed)
           .map(element -> element.getAttribute("href"))
           .filter(href -> href != null && href.contains("/vacancy/"))
@@ -209,6 +229,14 @@ public class VacancySearchPage extends SearchPage {
       return href.substring(0, queryStart);
     }
     return href;
+  }
+
+  private By filterInputBy(String name, String value) {
+    return By.cssSelector("input[name='" + cssValue(name) + "'][value='" + cssValue(value) + "']");
+  }
+
+  private String cssValue(String value) {
+    return value.replace("\\", "\\\\").replace("'", "\\'");
   }
 
   private String nothingFoundMessage(String query) {
