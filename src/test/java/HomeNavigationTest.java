@@ -1,7 +1,5 @@
-import org.junit.jupiter.api.parallel.Execution;
-import org.junit.jupiter.api.parallel.ExecutionMode;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
 import pages.AdvancedSearchPage;
 import pages.EmployersPage;
 import pages.HomePage;
@@ -9,43 +7,43 @@ import pages.HomePage;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@Execution(ExecutionMode.CONCURRENT)
+@Order(1)
 public class HomeNavigationTest extends BaseBrowserTest {
 
   private static final String EXISTING_CITY = "Санкт-Петербург";
   private static final String NON_EXISTING_CITY = "ГородКоторогоНет123124";
 
-  @ParameterizedTest(name = "{0}")
-  @MethodSource("browsers")
-  void homePageOpensWithSearchField(BrowserType browserType) {
-    runInBrowser(browserType, driver -> {
+  @Order(1)
+  @Test
+  void homePageOpensWithSearchField() {
+    runInBrowsers(driver -> {
       HomePage homePage = new HomePage(driver).open();
       assertTrue(homePage.hasVacancySearchField());
     });
   }
 
-  @ParameterizedTest(name = "{0}")
-  @MethodSource("browsers")
-  void advancedSearchOpens(BrowserType browserType) {
-    runInBrowser(browserType, driver -> {
+  @Order(2)
+  @Test
+  void advancedSearchOpens() {
+    runInBrowsers(driver -> {
       AdvancedSearchPage advancedSearchPage = new HomePage(driver).open().openAdvancedSearch();
       assertTrue(advancedSearchPage.currentUrl().contains("/search/vacancy/advanced"));
     });
   }
 
-  @ParameterizedTest(name = "{0}")
-  @MethodSource("browsers")
-  void employerCatalogOpens(BrowserType browserType) {
-    runInBrowser(browserType, driver -> {
+  @Order(3)
+  @Test
+  void employerCatalogOpens() {
+    runInBrowsers(driver -> {
       EmployersPage employersPage = new HomePage(driver).openEmployerCatalog();
       assertTrue(employersPage.currentUrl().contains("/employers_company"));
     });
   }
 
-  @ParameterizedTest(name = "{0}")
-  @MethodSource("browsers")
-  void existingRegionCanBeSelected(BrowserType browserType) {
-    runInBrowser(browserType, driver -> {
+  @Order(4)
+  @Test
+  void existingRegionCanBeSelected() {
+    runInBrowsers(driver -> {
       HomePage homePage = new HomePage(driver)
           .open()
           .changeRegionTo(EXISTING_CITY);
@@ -54,10 +52,10 @@ public class HomeNavigationTest extends BaseBrowserTest {
     });
   }
 
-  @ParameterizedTest(name = "{0}")
-  @MethodSource("browsers")
-  void nonExistingRegionDoesNotChangeCurrentRegion(BrowserType browserType) {
-    runInBrowser(browserType, driver -> {
+  @Order(5)
+  @Test
+  void nonExistingRegionDoesNotChangeCurrentRegion() {
+    runInBrowsers(driver -> {
       HomePage homePage = new HomePage(driver).open();
       String regionBefore = homePage.currentRegion();
 

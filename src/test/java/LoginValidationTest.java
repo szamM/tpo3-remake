@@ -1,13 +1,11 @@
-import org.junit.jupiter.api.parallel.Execution;
-import org.junit.jupiter.api.parallel.ExecutionMode;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
 import pages.HomePage;
 import pages.LoginPage;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@Execution(ExecutionMode.CONCURRENT)
+@Order(7)
 public class LoginValidationTest extends BaseBrowserTest {
 
   private static final String CORRECT_PHONE = "9211924046";
@@ -17,10 +15,10 @@ public class LoginValidationTest extends BaseBrowserTest {
   private static final String PASSWORD = "pupupu";
   private static final String EMPTY = "";
 
-  @ParameterizedTest(name = "{0}")
-  @MethodSource("browsers")
-  void submitPhone(BrowserType browserType) {
-    runInBrowser(browserType, driver -> {
+  @Order(1)
+  @Test
+  void submitPhone() {
+    runInBrowsers(driver -> {
       LoginPage loginPage = new HomePage(driver)
         .open()
         .openLogin()
@@ -30,10 +28,10 @@ public class LoginValidationTest extends BaseBrowserTest {
     });
   }
 
-  @ParameterizedTest(name = "{0}")
-  @MethodSource("browsers")
-  void submitEmptyPhone(BrowserType browserType) {
-    runInBrowser(browserType, driver -> {
+  @Order(2)
+  @Test
+  void submitEmptyPhone() {
+    runInBrowsers(driver -> {
       LoginPage loginPage = new HomePage(driver)
         .open()
         .openLogin()
@@ -43,10 +41,10 @@ public class LoginValidationTest extends BaseBrowserTest {
     });
   }
 
-  @ParameterizedTest(name = "{0}")
-  @MethodSource("browsers")
-  void submitIncorrectPhone(BrowserType browserType) {
-    runInBrowser(browserType, driver -> {
+  @Order(3)
+  @Test
+  void submitIncorrectPhone() {
+    runInBrowsers(driver -> {
       LoginPage loginPage = new HomePage(driver)
         .open()
         .openLogin()
@@ -56,10 +54,10 @@ public class LoginValidationTest extends BaseBrowserTest {
     });
   }
 
-  @ParameterizedTest(name = "{0}")
-  @MethodSource("browsers")
-  void emptyEmailShowsValidationError(BrowserType browserType) {
-    runInBrowser(browserType, driver -> {
+  @Order(4)
+  @Test
+  void emptyEmailShowsValidationError() {
+    runInBrowsers(driver -> {
       LoginPage loginPage = new HomePage(driver)
         .open()
         .openLogin()
@@ -71,10 +69,10 @@ public class LoginValidationTest extends BaseBrowserTest {
     });
   }
 
-  @ParameterizedTest(name = "{0}")
-  @MethodSource("browsers")
-  void IncorrectEmailShowsValidationError(BrowserType browserType) {
-    runInBrowser(browserType, driver -> {
+  @Order(5)
+  @Test
+  void IncorrectEmailShowsValidationError() {
+    runInBrowsers(driver -> {
       LoginPage loginPage = new HomePage(driver)
         .open()
         .openLogin()
@@ -86,10 +84,10 @@ public class LoginValidationTest extends BaseBrowserTest {
     });
   }
 
-  @ParameterizedTest(name = "{0}")
-  @MethodSource("browsers")
-  void CorrectEmailShows(BrowserType browserType) {
-    runInBrowser(browserType, driver -> {
+  @Order(6)
+  @Test
+  void CorrectEmailShows() {
+    runInBrowsers(driver -> {
       LoginPage loginPage = new HomePage(driver)
         .open()
         .openLogin()
@@ -100,10 +98,10 @@ public class LoginValidationTest extends BaseBrowserTest {
     });
   }
 
-  @ParameterizedTest(name = "{0}")
-  @MethodSource("browsers")
-  void CorrectEmailAndPassword(BrowserType browserType) {
-    runInBrowser(browserType, driver -> {
+  @Order(7)
+  @Test
+  void CorrectEmailAndPassword() {
+    runInBrowsers(driver -> {
       LoginPage loginPage = new HomePage(driver)
         .open()
         .openLogin()
@@ -115,10 +113,10 @@ public class LoginValidationTest extends BaseBrowserTest {
     });
   }
 
-  @ParameterizedTest(name = "{0}")
-  @MethodSource("browsers")
-  void correctEmailAndEmptyPassword(BrowserType browserType) {
-    runInBrowser(browserType, driver -> {
+  @Order(8)
+  @Test
+  void correctEmailAndEmptyPassword() {
+    runInBrowsers(driver -> {
       LoginPage loginPage = new HomePage(driver)
         .open()
         .openLogin()

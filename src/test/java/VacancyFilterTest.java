@@ -1,5 +1,5 @@
-import org.junit.jupiter.api.parallel.Execution;
-import org.junit.jupiter.api.parallel.ExecutionMode;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@Execution(ExecutionMode.CONCURRENT)
+@Order(5)
 public class VacancyFilterTest extends BaseBrowserTest {
 
   private static final String QUERY = "Java";
@@ -20,10 +20,10 @@ public class VacancyFilterTest extends BaseBrowserTest {
   private static final String INVALID_FILTER_VALUE = "INVALID";
   private static final String EXCLUDED_WORD = "Senior";
 
-  @ParameterizedTest(name = "{0}")
-  @MethodSource("browsers")
-  void salaryFilterShowsVacanciesWithSuitableIncome(BrowserType browserType) {
-    runInBrowser(browserType, driver -> {
+  @Order(1)
+  @Test
+  void salaryFilterShowsVacanciesWithSuitableIncome() {
+    runInBrowsers(driver -> {
       VacancySearchPage searchPage = new VacancySearchPage(driver)
           .openWithFilters(QUERY, "only_with_salary=true&salary=" + MIN_SALARY)
           .waitUntilSalaryTextsLoaded();
@@ -34,10 +34,10 @@ public class VacancyFilterTest extends BaseBrowserTest {
     });
   }
 
-  @ParameterizedTest(name = "{0}")
-  @MethodSource("browsers")
-  void fullEmploymentFilterIsSelected(BrowserType browserType) {
-    runInBrowser(browserType, driver -> {
+  @Order(2)
+  @Test
+  void fullEmploymentFilterIsSelected() {
+    runInBrowsers(driver -> {
       VacancySearchPage searchPage = new VacancySearchPage(driver)
           .openWithFilters(QUERY, "employment_form=FULL");
 
@@ -46,10 +46,10 @@ public class VacancyFilterTest extends BaseBrowserTest {
     });
   }
 
-  @ParameterizedTest(name = "{0}")
-  @MethodSource("browsers")
-  void noExperienceFilterShowsOnlyNoExperienceCards(BrowserType browserType) {
-    runInBrowser(browserType, driver -> {
+  @Order(3)
+  @Test
+  void noExperienceFilterShowsOnlyNoExperienceCards() {
+    runInBrowsers(driver -> {
       VacancySearchPage searchPage = new VacancySearchPage(driver)
           .openWithFilters(QUERY, "experience=noExperience");
 
@@ -58,10 +58,10 @@ public class VacancyFilterTest extends BaseBrowserTest {
     });
   }
 
-  @ParameterizedTest(name = "{0}")
-  @MethodSource("browsers")
-  void remoteWorkFormatFilterShowsOnlyRemoteCards(BrowserType browserType) {
-    runInBrowser(browserType, driver -> {
+  @Order(4)
+  @Test
+  void remoteWorkFormatFilterShowsOnlyRemoteCards() {
+    runInBrowsers(driver -> {
       VacancySearchPage searchPage = new VacancySearchPage(driver)
           .openWithFilters(QUERY, "work_format=REMOTE");
 
@@ -70,10 +70,10 @@ public class VacancyFilterTest extends BaseBrowserTest {
     });
   }
 
-  @ParameterizedTest(name = "{0}")
-  @MethodSource("browsers")
-  void excludedWordFilterHidesMatchingVacancies(BrowserType browserType) {
-    runInBrowser(browserType, driver -> {
+  @Order(5)
+  @Test
+  void excludedWordFilterHidesMatchingVacancies() {
+    runInBrowsers(driver -> {
       VacancySearchPage searchPage = new VacancySearchPage(driver)
           .openWithFilters(QUERY, "excluded_text=" + EXCLUDED_WORD)
           .closePopups()
@@ -85,23 +85,23 @@ public class VacancyFilterTest extends BaseBrowserTest {
   }
 
   private static Stream<Arguments> invalidFilterCases() {
-    return browsers().flatMap(browserType -> Stream.of(
-        Arguments.of(browserType, "salary=" + INVALID_SALARY, "salary", INVALID_SALARY),
-        Arguments.of(browserType, "employment_form=" + INVALID_FILTER_VALUE, "employment_form", INVALID_FILTER_VALUE),
-        Arguments.of(browserType, "experience=" + INVALID_FILTER_VALUE, "experience", INVALID_FILTER_VALUE),
-        Arguments.of(browserType, "work_format=" + INVALID_FILTER_VALUE, "work_format", INVALID_FILTER_VALUE)
-    ));
+    return Stream.of(
+        Arguments.of("salary=" + INVALID_SALARY, "salary", INVALID_SALARY),
+        Arguments.of("employment_form=" + INVALID_FILTER_VALUE, "employment_form", INVALID_FILTER_VALUE),
+        Arguments.of("experience=" + INVALID_FILTER_VALUE, "experience", INVALID_FILTER_VALUE),
+        Arguments.of("work_format=" + INVALID_FILTER_VALUE, "work_format", INVALID_FILTER_VALUE)
+    );
   }
 
-  @ParameterizedTest(name = "{0} - {2}")
+  @Order(6)
+  @ParameterizedTest(name = "{1}")
   @MethodSource("invalidFilterCases")
   void invalidFilterValuesAreIgnored(
-      BrowserType browserType,
       String filterParams,
       String filterName,
       String invalidValue
   ) {
-    runInBrowser(browserType, driver -> {
+    runInBrowsers(driver -> {
       VacancySearchPage searchPage = new VacancySearchPage(driver)
           .openWithFilters(QUERY, filterParams)
           .waitUntilResultsLoaded();

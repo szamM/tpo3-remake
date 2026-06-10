@@ -1,7 +1,5 @@
-import org.junit.jupiter.api.parallel.Execution;
-import org.junit.jupiter.api.parallel.ExecutionMode;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
 import pages.AdvancedSearchPage;
 import pages.HomePage;
 import pages.VacancyPage;
@@ -10,7 +8,7 @@ import pages.VacancySearchPage;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@Execution(ExecutionMode.CONCURRENT)
+@Order(6)
 public class AdvancedSearchTest extends BaseBrowserTest {
 
   private static final String ENTRY_LEVEL_QUERY = "QA";
@@ -19,10 +17,10 @@ public class AdvancedSearchTest extends BaseBrowserTest {
   private static final String IMPOSSIBLE_SALARY = "9999999";
   private static final int VACANCIES_TO_CHECK = 2;
 
-  @ParameterizedTest(name = "{0}")
-  @MethodSource("browsers")
-  void entryLevelFullTimeSearchOpensMatchingVacancies(BrowserType browserType) {
-    runInBrowser(browserType, driver -> {
+  @Order(1)
+  @Test
+  void entryLevelFullTimeSearchOpensMatchingVacancies() {
+    runInBrowsers(driver -> {
       AdvancedSearchPage advancedSearchPage = new HomePage(driver).open().openAdvancedSearch();
       VacancySearchPage searchPage = advancedSearchPage
           .searchEntryLevelFullTimeVacancies(ENTRY_LEVEL_QUERY, ENTRY_LEVEL_SALARY);
@@ -45,10 +43,10 @@ public class AdvancedSearchTest extends BaseBrowserTest {
     });
   }
 
-  @ParameterizedTest(name = "{0}")
-  @MethodSource("browsers")
-  void impossibleEntryLevelFullTimeSalaryShowsNothingFound(BrowserType browserType) {
-    runInBrowser(browserType, driver -> {
+  @Order(2)
+  @Test
+  void impossibleEntryLevelFullTimeSalaryShowsNothingFound() {
+    runInBrowsers(driver -> {
       VacancySearchPage searchPage = new HomePage(driver)
           .open()
           .openAdvancedSearch()

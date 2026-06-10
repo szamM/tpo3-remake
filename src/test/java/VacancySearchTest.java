@@ -1,7 +1,5 @@
-import org.junit.jupiter.api.parallel.Execution;
-import org.junit.jupiter.api.parallel.ExecutionMode;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
 import pages.HomePage;
 import pages.VacancyPage;
 import pages.VacancySearchPage;
@@ -11,7 +9,7 @@ import java.util.Locale;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@Execution(ExecutionMode.CONCURRENT)
+@Order(4)
 public class VacancySearchTest extends BaseBrowserTest {
 
   private static final String EMPTY_QUERY = "";
@@ -20,10 +18,10 @@ public class VacancySearchTest extends BaseBrowserTest {
   private static final String COMPANY_QUERY = "HeadHunter";
   private static final String DETAILS_QUERY = "Java";
 
-  @ParameterizedTest(name = "{0}")
-  @MethodSource("browsers")
-  void searchUnknownVacancyByKeyword(BrowserType browserType) {
-    runInBrowser(browserType, driver -> {
+  @Order(1)
+  @Test
+  void searchUnknownVacancyByKeyword() {
+    runInBrowsers(driver -> {
       VacancySearchPage searchPage = new HomePage(driver)
           .open()
           .closePopups()
@@ -35,10 +33,10 @@ public class VacancySearchTest extends BaseBrowserTest {
     });
   }
 
-  @ParameterizedTest(name = "{0}")
-  @MethodSource("browsers")
-  void emptySearchShowsVacancyList(BrowserType browserType) {
-    runInBrowser(browserType, driver -> {
+  @Order(2)
+  @Test
+  void emptySearchShowsVacancyList() {
+    runInBrowsers(driver -> {
       VacancySearchPage searchPage = new HomePage(driver)
           .open()
           .closePopups()
@@ -52,10 +50,10 @@ public class VacancySearchTest extends BaseBrowserTest {
     });
   }
 
-  @ParameterizedTest(name = "{0}")
-  @MethodSource("browsers")
-  void searchVacancyByKeyword(BrowserType browserType) {
-    runInBrowser(browserType, driver -> {
+  @Order(3)
+  @Test
+  void searchVacancyByKeyword() {
+    runInBrowsers(driver -> {
       VacancySearchPage searchPage = new HomePage(driver)
           .open()
           .closePopups()
@@ -70,10 +68,10 @@ public class VacancySearchTest extends BaseBrowserTest {
     });
   }
 
-  @ParameterizedTest(name = "{0}")
-  @MethodSource("browsers")
-  void searchVacanciesByCompanyName(BrowserType browserType) {
-    runInBrowser(browserType, driver -> {
+  @Order(4)
+  @Test
+  void searchVacanciesByCompanyName() {
+    runInBrowsers(driver -> {
       VacancySearchPage searchPage = new VacancySearchPage(driver)
           .openWithFilters(COMPANY_QUERY, "search_field=company_name")
           .closePopups()
@@ -84,10 +82,10 @@ public class VacancySearchTest extends BaseBrowserTest {
     });
   }
 
-  @ParameterizedTest(name = "{0}")
-  @MethodSource("browsers")
-  void openVacancyDetails(BrowserType browserType) {
-    runInBrowser(browserType, driver -> {
+  @Order(5)
+  @Test
+  void openVacancyDetails() {
+    runInBrowsers(driver -> {
       VacancyPage vacancyPage = new HomePage(driver)
           .open()
           .closePopups()

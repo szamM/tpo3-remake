@@ -1,19 +1,17 @@
-import org.junit.jupiter.api.parallel.Execution;
-import org.junit.jupiter.api.parallel.ExecutionMode;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
 import pages.EmployersPage;
 import pages.HomePage;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@Execution(ExecutionMode.CONCURRENT)
+@Order(3)
 public class EmployersSearchTest extends BaseBrowserTest {
 
-  @ParameterizedTest(name = "{0}")
-  @MethodSource("browsers")
-  void searchEmployers(BrowserType browserType) {
-    runInBrowser(browserType, driver -> {
+  @Order(1)
+  @Test
+  void searchEmployers() {
+    runInBrowsers(driver -> {
       EmployersPage employersPage = new HomePage(driver).openEmployerCatalog().openList().searchCompany("HeadHunter");
       assertTrue(employersPage.resultCount() > 0);
       assertTrue(employersPage.hasEmployerContaining("HeadHunter"));

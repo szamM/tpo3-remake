@@ -1,22 +1,20 @@
-import org.junit.jupiter.api.parallel.Execution;
-import org.junit.jupiter.api.parallel.ExecutionMode;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
 import pages.HomePage;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@Execution(ExecutionMode.CONCURRENT)
+@Order(2)
 public class CityChangeTest extends BaseBrowserTest {
 
   private static final String EXISTING_CITY = "Санкт-Петербург";
   private static final String NON_EXISTING_CITY = "ГородКоторогоНет123124";
 
-  @ParameterizedTest(name = "{0}")
-  @MethodSource("browsers")
-  void existingRegionCanBeSelectedAndUnknownRegionIsIgnored(BrowserType browserType) {
-    runInBrowser(browserType, driver -> {
+  @Order(1)
+  @Test
+  void existingRegionCanBeSelectedAndUnknownRegionIsIgnored() {
+    runInBrowsers(driver -> {
       HomePage homePage = new HomePage(driver)
           .open()
           .changeRegionTo(EXISTING_CITY);
